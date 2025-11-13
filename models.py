@@ -1,21 +1,38 @@
 import numpy as np
 from scipy.optimize import curve_fit
 
-# Double-exponential model for capacity fade
+# Double exponential model
 def model(x, A1, k1, A2, k2, baseline):
-    return A1*np.exp(-k1*x) + A2*np.exp(-k2*x) + baseline
+    return A1 * np.exp(-k1 * x) + A2 * np.exp(-k2 * x) + baseline
 
 def fit_capacity_fade(cycles, capacity):
-    guess = [0.1, 0.001, 0.05, 0.0001, capacity[-1]]
-    params, _ = curve_fit(model, cycles, capacity, p0=guess)
+
+    # Automatic initial guesses based on data
+    A1_guess = capacity.max() - capacity.min()
+    A2_guess = (capacity.max() - capacity.min()) * 0.1
+    k1_guess = 0.001
+    k2_guess = 0.0001
+    baseline_guess = capacity[-1]
+
+    guess = [A1_guess, k1_guess, A2_guess, k2_guess, baseline_guess]
+
+    # Add bounds to stabilize fit
+    lower_bounds = [0, 0, 0, 0, 0]
+    upper_bounds = [10, 1, 10, 1, 2]  # adjust if needed
+
+    try:
+        params, _ = curve_fit(
+            model, cycles, capacity,
+            p0=guess,
+            bounds=(lower_bounds, upper_bounds),
+            maxfev=20000
+        )
+    except Exception as e:
+        # If fit fails → use fallback linear model
+        print("Fit failed, using fallback model:", e)
+        slope, intercept = np.polyfit(cycles, capacity, 1)
+        return [0, 0, 0, 0, intercept]  # baseline-only fallback
+
     return params
 
-def predict_cycles_to_eol(params, threshold):
-    A1, k1, A2, k2, baseline = params
 
-    # Solve A1 e^(-k1 x) + A2 e^(-k2 x) + baseline = threshold
-    for i in range(1, 50000):
-        cap = A1*np.exp(-k1*i) + A2*np.exp(-k2*i) + baseline
-        if cap <= threshold:
-            return i
-    return None
