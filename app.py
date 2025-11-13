@@ -55,7 +55,7 @@ if uploaded_file:
 
     # ---------- Lifetime Prediction ----------
     st.subheader("Lifetime Prediction (to 80% SOH)")
-   eol_cycle = predict_cycles_to_eol(params, soh_threshold=0.8)
+    eol_cycle = predict_cycles_to_eol(params, soh_threshold=0.8)
 
 
     st.success(f"Estimated life until 80% SOH: **{int(eol_cycle)} cycles**")
@@ -83,4 +83,5 @@ if uploaded_file:
         **This tool demonstrates SOH forecasting using real data and machine-learning inspired modeling.**
         """
     )
+
 
