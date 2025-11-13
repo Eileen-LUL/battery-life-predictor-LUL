@@ -55,8 +55,7 @@ def predict_cycles_to_eol(params, soh_threshold=0.8):
     initial_capacity = A1 + A2 + baseline
 
     # target capacity at the given SOH threshold
-    eol_cycle = predict_cycles_to_eol(params, soh_threshold=0.8)
-
+    target = soh_threshold * initial_capacity
 
     # numerical search for cycle at which model drops below threshold
     for cycle in range(1, 5000):
@@ -65,4 +64,3 @@ def predict_cycles_to_eol(params, soh_threshold=0.8):
             return cycle
 
     return None  # fallback if never drops below
-
